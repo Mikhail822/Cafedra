@@ -1,0 +1,27 @@
+name: departmentevents
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: department_events_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-department_events}
+      POSTGRES_USER: ${DB_USER:-department_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      TZ: Europe/Simferopol
+    command: ["postgres", "-c", "timezone=Europe/Simferopol"]
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/01-create_tables.sql:ro
+      - ./sql/insert_data.sql:/docker-entrypoint-initdb.d/02-insert_data.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-department_user} -d ${DB_NAME:-department_events}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

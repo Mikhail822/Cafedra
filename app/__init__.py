@@ -1,0 +1,1 @@
+"""Department Events desktop application."""
